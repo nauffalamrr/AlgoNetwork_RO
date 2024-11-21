@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Route Optimization</string>
 
+    //Home Page
     <string name="title_home">Home</string>
-    <string name="title_history">History</string>
     <string name="welcome">Welcome to</string>
     <string name="route_app">Route Optimization App</string>
     <string name="top_app">#1 Route Optimization App</string>
@@ -11,6 +11,14 @@
     <string name="vehicle_car">Car</string>
     <string name="recent_history">Recent History</string>
     <string name="arrow">Forward Arrow</string>
+
+    //History Page
+    <string name="title_history">History</string>
+    <string name="title_page_history">Trip History</string>
+    <string name="history_date">11 Nov, 2024</string>
+    <string name="status_trip">Completed</string>
+    <string name="from">Jl. siwalankerto timur 1</string>
+    <string name="to">Universitas Ciputra</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
