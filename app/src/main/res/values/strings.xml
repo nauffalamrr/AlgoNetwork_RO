@@ -12,6 +12,17 @@
     <string name="recent_history">Recent History</string>
     <string name="arrow">Forward Arrow</string>
 
+    //Destination Page
+    <string name="back">Back</string>
+    <string name="vehicle_image">Vehicle Image</string>
+    <string name="vehicle_option">Vehicle Option</string>
+    <string name="your_location">Your Location</string>
+    <string name="your_destination">Your Destination</string>
+    <string name="switch_location">Switch Location</string>
+    <string name="add_destination">Add Destination</string>
+    <string name="optimize">Optimize</string>
+    <string name="map_location">Map Location</string>
+
     //History Page
     <string name="title_history">History</string>
     <string name="title_page_history">Trip History</string>
