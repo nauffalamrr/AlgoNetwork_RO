@@ -13,6 +13,9 @@
         android:theme="@style/Theme.RouteOptimization"
         tools:targetApi="31">
         <activity
+            android:name=".ui.result.ResultActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.destination.DestinationActivity"
             android:exported="false" />
         <activity
