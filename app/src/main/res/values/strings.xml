@@ -20,6 +20,7 @@
     <string name="your_destination">Your Destination</string>
     <string name="switch_location">Switch Location</string>
     <string name="add_destination">Add Destination</string>
+    <string name="remove_destination">Remove Destination</string>
     <string name="optimize">Optimize</string>
     <string name="map_location">Map Location</string>
 
