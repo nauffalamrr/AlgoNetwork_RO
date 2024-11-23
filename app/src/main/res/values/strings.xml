@@ -53,4 +53,13 @@
         <item>@drawable/ic_motorcycle</item>
         <item>@drawable/ic_car</item>
     </integer-array>
+
+    //Result Page
+    <string name="close_popup_button">Close Button</string>
+    <string name="destination_1">Rute 1\nJl. Ketintang Timur</string>
+    <string name="time_1">34 menit</string>
+    <string name="destination_2">Rute 2\nJl. Hr Muhammad</string>
+    <string name="time_2">36 menit</string>
+    <string name="begin_trip">Go</string>
+
 </resources>

@@ -1,5 +1,6 @@
 package com.algonetwork.routeoptimization.ui.destination
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.databinding.ActivityDestinationBinding
 import com.algonetwork.routeoptimization.adapter.Destination
 import com.algonetwork.routeoptimization.adapter.DestinationAdapter
+import com.algonetwork.routeoptimization.ui.result.ResultActivity
 
 class DestinationActivity : AppCompatActivity() {
 
@@ -48,6 +50,15 @@ class DestinationActivity : AppCompatActivity() {
         binding.backButton.setOnClickListener {
             onBackPressed()
         }
+
+        binding.buttonOptimize.setOnClickListener {
+            navigateToResultActivity()
+        }
+    }
+
+    private fun navigateToResultActivity() {
+        val moveIntent = Intent(this@DestinationActivity, ResultActivity::class.java)
+        startActivity(moveIntent)
     }
 
     private fun setupRecyclerView() {
