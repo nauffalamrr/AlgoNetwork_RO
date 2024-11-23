@@ -1,4 +1,4 @@
-package com.algonetwork.routeoptimization.ui
+package com.algonetwork.routeoptimization.adapter
 
 import android.view.LayoutInflater
 import android.view.View

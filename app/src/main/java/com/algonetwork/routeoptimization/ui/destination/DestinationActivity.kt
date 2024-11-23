@@ -2,15 +2,12 @@ package com.algonetwork.routeoptimization.ui.destination
 
 import android.os.Bundle
 import android.view.View
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.databinding.ActivityDestinationBinding
-import com.algonetwork.routeoptimization.ui.Destination
-import com.algonetwork.routeoptimization.ui.DestinationAdapter
+import com.algonetwork.routeoptimization.adapter.Destination
+import com.algonetwork.routeoptimization.adapter.DestinationAdapter
 
 class DestinationActivity : AppCompatActivity() {
 

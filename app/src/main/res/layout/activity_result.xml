@@ -39,7 +39,7 @@
                 android:layout_height="24dp"
                 android:layout_gravity="end"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_close"
+                android:src="@drawable/ic_close_popup"
                 android:contentDescription="Close Button" />
 
             <LinearLayout

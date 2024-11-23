@@ -27,10 +27,30 @@
     //History Page
     <string name="title_history">History</string>
     <string name="title_page_history">Trip History</string>
-    <string name="history_date">11 Nov, 2024</string>
-    <string name="status_trip">Completed</string>
-    <string name="from">Jl. siwalankerto timur 1</string>
-    <string name="to">Universitas Ciputra</string>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    //Dummy Data History Trip
+    <string-array name="data_date">
+        <item>11 Nov, 2024</item>
+        <item>12 Nov, 2024</item>
+    </string-array>
+
+    <string-array name="data_status">
+        <item>Completed</item>
+        <item>Completed</item>
+    </string-array>
+    
+    <string-array name="data_from">
+        <item>Jl. siwalankerto timur 1</item>
+        <item>Jl. siwalankerto timur 2</item>
+    </string-array>
+    
+    <string-array name="data_destination">
+        <item>Universitas Ciputra</item>
+        <item>Universitas Ciputra</item>
+    </string-array>
+
+    <integer-array name="data_vehicle">
+        <item>@drawable/ic_motorcycle</item>
+        <item>@drawable/ic_car</item>
+    </integer-array>
 </resources>
