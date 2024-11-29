@@ -23,6 +23,7 @@
     <string name="remove_destination">Remove Destination</string>
     <string name="optimize">Optimize</string>
     <string name="map_location">Map Location</string>
+    <string name="select_location">Select Location</string>
 
     //History Page
     <string name="title_history">History</string>
@@ -38,12 +39,12 @@
         <item>Completed</item>
         <item>Completed</item>
     </string-array>
-    
+
     <string-array name="data_from">
         <item>Jl. siwalankerto timur 1</item>
         <item>Jl. siwalankerto timur 2</item>
     </string-array>
-    
+
     <string-array name="data_destination">
         <item>Universitas Ciputra</item>
         <item>Universitas Ciputra</item>

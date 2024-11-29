@@ -7,17 +7,23 @@ import androidx.recyclerview.widget.RecyclerView
 import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.databinding.ItemAddDestinationBinding
 
-data class Destination(val title: String, val detail: String)
+data class Destination(val title: String, var detail: String)
 
 class DestinationAdapter(
-    private val destinations: MutableList<Destination>
+    private val destinations: MutableList<Destination>,
+    private val onItemClick: (Int) -> Unit
 ) : RecyclerView.Adapter<DestinationAdapter.DestinationViewHolder>() {
 
     inner class DestinationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val binding = ItemAddDestinationBinding.bind(view)
+
         fun bind(destination: Destination) {
             binding.tvDestination.text = destination.title
             binding.tvDestinationDetail.text = destination.detail
+
+            itemView.setOnClickListener {
+                onItemClick(adapterPosition)
+            }
         }
     }
 

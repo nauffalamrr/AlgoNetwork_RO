@@ -1,5 +1,6 @@
 package com.algonetwork.routeoptimization.ui.destination
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -9,7 +10,9 @@ import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.databinding.ActivityDestinationBinding
 import com.algonetwork.routeoptimization.adapter.Destination
 import com.algonetwork.routeoptimization.adapter.DestinationAdapter
+import com.algonetwork.routeoptimization.data.Location
 import com.algonetwork.routeoptimization.ui.result.ResultActivity
+import com.algonetwork.routeoptimization.ui.selectlocation.SelectLocationActivity
 
 class DestinationActivity : AppCompatActivity() {
 
@@ -37,6 +40,14 @@ class DestinationActivity : AppCompatActivity() {
             removeLastDestination()
         }
 
+        binding.firstLocation.setOnClickListener{
+            openSelectLocationActivity(REQUEST_CODE_FIRST_LOCATION)
+        }
+
+        binding.firstDestination.setOnClickListener {
+            openSelectLocationActivity(REQUEST_CODE_FIRST_DESTINATION)
+        }
+
         val vehicleType = intent.getStringExtra("vehicleType")
 
         if (vehicleType == "motorcycle") {
@@ -62,13 +73,15 @@ class DestinationActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = DestinationAdapter(destinationList)
+        adapter = DestinationAdapter(destinationList) { position ->
+            openSelectLocationActivity(REQUEST_CODE_NEXT_DESTINATION, position)
+        }
         binding.rvAddDestination.layoutManager = LinearLayoutManager(this)
         binding.rvAddDestination.adapter = adapter
     }
 
     private fun addNewDestination() {
-        val maxDestinations = 9
+        val maxDestinations = 2
         if (destinationList.size < maxDestinations) {
             val newDestination = Destination(
                 title = "Your Destination",
@@ -92,7 +105,6 @@ class DestinationActivity : AppCompatActivity() {
 
     private fun removeLastDestination() {
         if (destinationList.isNotEmpty()) {
-            // Hapus item terakhir
             destinationList.removeAt(destinationList.size - 1)
             adapter.notifyItemRemoved(destinationList.size)
 
@@ -106,5 +118,45 @@ class DestinationActivity : AppCompatActivity() {
                 binding.textRemoveDestination.visibility = View.GONE
             }
         }
+    }
+
+    private fun openSelectLocationActivity(requestCode: Int, position: Int? = null) {
+        val intent = Intent(this, SelectLocationActivity::class.java)
+        intent.putExtra("requestCode", requestCode)
+        position?.let { intent.putExtra("position", it) }
+        startActivityForResult(intent, SELECT_LOCATION_REQUEST_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SELECT_LOCATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val location = data?.getParcelableExtra<Location>("location")
+            val reqCode = data?.getIntExtra("requestCode", 0) ?: 0
+
+            location?.let {
+                when (reqCode) {
+                    REQUEST_CODE_FIRST_LOCATION -> {
+                        binding.tvLocationDetail.text = it.name
+                    }
+                    REQUEST_CODE_FIRST_DESTINATION -> {
+                        binding.tvDestinationDetail.text = it.name
+                    }
+                    REQUEST_CODE_NEXT_DESTINATION -> {
+                        val position = data?.getIntExtra("position", -1) ?: -1
+                        if (position != -1) {
+                            destinationList[position].detail = it.name
+                            adapter.notifyItemChanged(position)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val SELECT_LOCATION_REQUEST_CODE = 1001
+        private const val REQUEST_CODE_FIRST_LOCATION = 1
+        private const val REQUEST_CODE_FIRST_DESTINATION = 2
+        private const val REQUEST_CODE_NEXT_DESTINATION = 3
     }
 }
