@@ -69,6 +69,12 @@ class DestinationActivity : AppCompatActivity() {
 
     private fun navigateToResultActivity() {
         val moveIntent = Intent(this@DestinationActivity, ResultActivity::class.java)
+        moveIntent.putExtra("firstLocation", binding.tvLocationDetail.text.toString())
+        moveIntent.putExtra("firstDestination", binding.tvDestinationDetail.text.toString())
+
+        val destinationDetails = destinationList.map { it.detail }
+        moveIntent.putStringArrayListExtra("otherDestinations", ArrayList(destinationDetails))
+
         startActivity(moveIntent)
     }
 
