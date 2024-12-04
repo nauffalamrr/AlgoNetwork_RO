@@ -31,17 +31,29 @@
             android:id="@+id/tv_history_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="150dp"
+            android:layout_marginStart="230dp"
             android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
             android:textSize="14sp"
             android:textStyle="bold"
             card_view:layout_constraintTop_toTopOf="parent"
-            card_view:layout_constraintStart_toEndOf="@id/tv_history_date"
+            card_view:layout_constraintStart_toStartOf="parent"
             tools:text="@tools:sample/lorem"/>
+
+        <ImageView
+            android:id="@+id/iv_delete"
+            android:contentDescription="@string/delete"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="12dp"
+            android:src="@drawable/ic_close_popup"
+            card_view:layout_constraintTop_toTopOf="parent"
+            card_view:layout_constraintStart_toEndOf="@+id/tv_history_status"/>
         
         <ImageView
             android:id="@+id/iv_vehicle"
+            android:contentDescription="@string/vehicle"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginTop="12dp"
@@ -56,10 +68,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_marginStart="20dp"
             card_view:layout_constraintTop_toTopOf="parent"
             card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintStart_toEndOf="@id/iv_vehicle"
-            card_view:layout_constraintEnd_toStartOf="@id/tv_history_status">
+            card_view:layout_constraintStart_toEndOf="@id/iv_vehicle">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -70,6 +82,7 @@
 
                 <ImageView
                     android:id="@+id/iv_from"
+                    android:contentDescription="@string/from"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_from"/>
@@ -91,6 +104,7 @@
 
                 <ImageView
                     android:id="@+id/iv_destination"
+                    android:contentDescription="@string/to"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_destination"/>

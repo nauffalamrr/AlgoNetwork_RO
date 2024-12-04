@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id ("kotlin-parcelize")
+    id("com.google.devtools.ksp") version "1.9.0-1.0.11"
 }
 
 android {
@@ -54,6 +55,10 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation (libs.kotlinx.coroutines.android)
 
+    //Live Data
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+
     //Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit2.converter.gson)
@@ -62,4 +67,9 @@ dependencies {
     //OSM
     implementation (libs.osmdroid.android)
     implementation (libs.osmbonuspack)
+
+    //Room
+    implementation(libs.androidx.room.runtime)
+    implementation (libs.androidx.room.ktx)
+    ksp(libs.room.compiler)
 }

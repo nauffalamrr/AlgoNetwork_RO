@@ -5,17 +5,23 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.adapter.TripHistoryAdapter
-import com.algonetwork.routeoptimization.data.TripHistory
+import com.algonetwork.routeoptimization.database.TripHistory
+import com.algonetwork.routeoptimization.database.TripHistoryRoomDatabase
 import com.algonetwork.routeoptimization.databinding.FragmentHistoryBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HistoryFragment : Fragment() {
 
     private var _binding: FragmentHistoryBinding? = null
     private val binding get() = _binding!!
     private lateinit var tripHistoryAdapter: TripHistoryAdapter
+    private lateinit var database: TripHistoryRoomDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,33 +34,33 @@ class HistoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val tripHistoryList = getTripHistory()
-        tripHistoryAdapter = TripHistoryAdapter(tripHistoryList)
+        database = TripHistoryRoomDatabase.getDatabase(requireContext())
+
+        tripHistoryAdapter = TripHistoryAdapter(arrayListOf()) { tripHistory ->
+            deleteHistory(tripHistory)
+        }
 
         binding.rvTripHistory.layoutManager = LinearLayoutManager(context)
         binding.rvTripHistory.adapter = tripHistoryAdapter
+
+        loadHistory()
     }
 
-    private fun getTripHistory(): ArrayList<TripHistory> {
-        val dataDate = resources.getStringArray(R.array.data_date)
-        val dataStatus = resources.getStringArray(R.array.data_status)
-        val dataFrom = resources.getStringArray(R.array.data_from)
-        val dataDestination = resources.getStringArray(R.array.data_destination)
-        val dataVehicle = resources.obtainTypedArray(R.array.data_vehicle)
-
-        val tripHistoryList = ArrayList<TripHistory>()
-        for (i in dataDate.indices) {
-            val trip = TripHistory(
-                date = dataDate[i],
-                status = dataStatus[i],
-                from = dataFrom[i],
-                destination = dataDestination[i],
-                vehicle = dataVehicle.getResourceId(i, -1)
-            )
-            tripHistoryList.add(trip)
+    private fun loadHistory() {
+        lifecycleScope.launch {
+            database.tripHistoryDao().getAll().collect { tripHistories ->
+                tripHistoryAdapter.updateData(ArrayList(tripHistories))
+            }
         }
-        dataVehicle.recycle()
-        return tripHistoryList
+    }
+
+    private fun deleteHistory(tripHistory: TripHistory) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            database.tripHistoryDao().delete(tripHistory)
+            withContext(Dispatchers.Main) {
+                loadHistory()
+            }
+        }
     }
 
     override fun onDestroyView() {

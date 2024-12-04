@@ -29,38 +29,18 @@
     <string name="title_history">History</string>
     <string name="title_page_history">Trip History</string>
 
-    //Dummy Data History Trip
-    <string-array name="data_date">
-        <item>11 Nov, 2024</item>
-        <item>12 Nov, 2024</item>
-    </string-array>
-
-    <string-array name="data_status">
-        <item>Completed</item>
-        <item>Completed</item>
-    </string-array>
-
-    <string-array name="data_from">
-        <item>Jl. siwalankerto timur 1</item>
-        <item>Jl. siwalankerto timur 2</item>
-    </string-array>
-
-    <string-array name="data_destination">
-        <item>Universitas Ciputra</item>
-        <item>Universitas Ciputra</item>
-    </string-array>
-
-    <integer-array name="data_vehicle">
-        <item>@drawable/ic_motorcycle</item>
-        <item>@drawable/ic_car</item>
-    </integer-array>
-
     //Result Page
     <string name="close_popup_button">Close Button</string>
-    <string name="destination_1">Rute 1\nJl. Ketintang Timur</string>
-    <string name="time_1">34 menit</string>
-    <string name="destination_2">Rute 2\nJl. Hr Muhammad</string>
-    <string name="time_2">36 menit</string>
-    <string name="begin_trip">Go</string>
+    <string name="begin_trip">Finish</string>
+    <string name="error_loading_route">Failed to load route: %1$s</string>
+    <string name="route_number">Route %1$d</string>
+    <string name="show_pop_up">Show Pop Up</string>
+    <string name="error">Error</string>
+
+    //Content Description
+    <string name="delete">Delete</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="from">from</string>
+    <string name="to">to</string>
 
 </resources>

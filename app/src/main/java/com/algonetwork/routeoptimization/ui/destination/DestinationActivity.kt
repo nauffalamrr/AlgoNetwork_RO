@@ -52,10 +52,10 @@ class DestinationActivity : AppCompatActivity() {
 
         if (vehicleType == "motorcycle") {
             binding.optionVehicle.setImageResource(R.drawable.ic_motorcycle)
-            binding.textVehicleOption.text = "Motorcycle"
+            binding.textVehicleOption.text = getString(R.string.vehicle_motorcycle)
         } else {
             binding.optionVehicle.setImageResource(R.drawable.ic_car)
-            binding.textVehicleOption.text = "Car"
+            binding.textVehicleOption.text = getString(R.string.vehicle_car)
         }
 
         binding.backButton.setOnClickListener {
@@ -74,6 +74,9 @@ class DestinationActivity : AppCompatActivity() {
 
         val destinationDetails = destinationList.map { it.detail }
         moveIntent.putStringArrayListExtra("otherDestinations", ArrayList(destinationDetails))
+
+        val vehicleType = intent.getStringExtra("vehicleType")
+        moveIntent.putExtra("vehicleType", vehicleType)
 
         startActivity(moveIntent)
     }

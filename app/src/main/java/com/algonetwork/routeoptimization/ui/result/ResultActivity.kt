@@ -1,12 +1,19 @@
 package com.algonetwork.routeoptimization.ui.result
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.algonetwork.routeoptimization.MainActivity
+import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.adapter.ResultAdapter
 import com.algonetwork.routeoptimization.data.Result
+import com.algonetwork.routeoptimization.database.TripHistory
+import com.algonetwork.routeoptimization.database.TripHistoryRoomDatabase
 import com.algonetwork.routeoptimization.databinding.ActivityResultBinding
+import com.algonetwork.routeoptimization.helper.DateHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +32,7 @@ class ResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivityResultBinding
     private lateinit var mapView: MapView
     private lateinit var adapter: ResultAdapter
+    private lateinit var database: TripHistoryRoomDatabase
     private val locations = mutableListOf<Result>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +41,8 @@ class ResultActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportActionBar?.hide()
+
+        database = TripHistoryRoomDatabase.getDatabase(this)
 
         // Load map configuration
         Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", MODE_PRIVATE))
@@ -44,6 +54,7 @@ class ResultActivity : AppCompatActivity() {
         val firstLocation = intent.getStringExtra("firstLocation")
         val firstDestination = intent.getStringExtra("firstDestination")
         val otherDestinations = intent.getStringArrayListExtra("otherDestinations")
+        val vehicleType = intent.getStringExtra("vehicleType") ?: "Car"
 
         // Populate RecyclerView data
         addLocationData(firstLocation, firstDestination, otherDestinations)
@@ -55,11 +66,56 @@ class ResultActivity : AppCompatActivity() {
         displayMarkersAndRoute()
 
         binding.btnGo.setOnClickListener {
-            binding.popupCard.visibility = View.GONE
+            saveTripToDatabase(firstLocation, firstDestination, vehicleType)
+            navigateToHistoryFragment()
         }
 
         binding.btnClose.setOnClickListener {
             binding.popupCard.visibility = View.GONE
+            binding.btnShowPopup.visibility = View.VISIBLE
+        }
+
+        binding.btnShowPopup.setOnClickListener {
+            binding.popupCard.visibility = View.VISIBLE
+            binding.btnShowPopup.visibility = View.GONE
+        }
+    }
+
+    private fun navigateToHistoryFragment() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("openFragment", "HistoryFragment")
+        startActivity(intent)
+        finish()
+    }
+
+    private fun saveTripToDatabase(from: String?, destination: String?, vehicleType: String) {
+        val date = DateHelper.getCurrentDate()
+
+        val lastDestination = if (locations.isNotEmpty()) {
+            locations.last().destination
+        } else {
+            "Unknown"
+        }
+        val tripHistory = TripHistory(
+            date = date,
+            status = "Completed",
+            from = from ?: "Unknown",
+            destination = lastDestination,
+            vehicle = getVehicleIcon(vehicleType)
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.tripHistoryDao().insert(tripHistory)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@ResultActivity, "Trip saved successfully!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun getVehicleIcon(vehicleType: String): Int {
+        return when (vehicleType.lowercase(Locale.getDefault())) {
+            "motorcycle" -> R.drawable.ic_motorcycle
+            else -> R.drawable.ic_car
         }
     }
 
@@ -93,7 +149,7 @@ class ResultActivity : AppCompatActivity() {
     private fun getGeoPointFromAddress(address: String?): GeoPoint? {
         val geocoder = android.location.Geocoder(this, Locale.getDefault())
         return try {
-            val addressList = geocoder.getFromLocationName(address ?: "", 1)  // Pastikan tidak null
+            val addressList = geocoder.getFromLocationName(address ?: "", 1)
             if (!addressList.isNullOrEmpty()) {
                 val latLng = addressList[0]
                 GeoPoint(latLng.latitude, latLng.longitude)
@@ -164,7 +220,7 @@ class ResultActivity : AppCompatActivity() {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     // Optionally, show an error message to the user
-                    binding.errorMessage.text = "Failed to load route: ${e.localizedMessage}"
+                    binding.errorMessage.text = getString(R.string.error_loading_route, e.localizedMessage)
                     binding.errorMessage.visibility = View.VISIBLE
                 }
             }

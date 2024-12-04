@@ -3,10 +3,12 @@ package com.algonetwork.routeoptimization.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.algonetwork.routeoptimization.data.TripHistory
+import com.algonetwork.routeoptimization.database.TripHistory
 import com.algonetwork.routeoptimization.databinding.ItemHistoryTripBinding
 
-class TripHistoryAdapter(private val tripHistory: ArrayList<TripHistory>) :
+class TripHistoryAdapter(
+    private var tripHistory: MutableList<TripHistory>,
+    private val onDeleteClick: (TripHistory) -> Unit) :
     RecyclerView.Adapter<TripHistoryAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -15,15 +17,31 @@ class TripHistoryAdapter(private val tripHistory: ArrayList<TripHistory>) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val (date, status, from, destination, vehicle) = tripHistory[position]
-        holder.binding.tvHistoryDate.text = date
-        holder.binding.tvHistoryStatus.text = status
-        holder.binding.tvHistoryFrom.text = from
-        holder.binding.tvHistoryDestination.text = destination
-        holder.binding.ivVehicle.setImageResource(vehicle)
+        val historyItem = tripHistory[position]
+        holder.bind(historyItem)
     }
 
     override fun getItemCount() = tripHistory.size
 
-    class ViewHolder(var binding: ItemHistoryTripBinding) : RecyclerView.ViewHolder(binding.root)
+    fun updateData(newData: List<TripHistory>) {
+        tripHistory.clear()
+        tripHistory.addAll(newData)
+        notifyDataSetChanged()
+    }
+
+    inner class ViewHolder(var binding: ItemHistoryTripBinding) : RecyclerView.ViewHolder(binding.root){
+        fun bind(history: TripHistory) {
+            with(binding) {
+                tvHistoryDate.text = history.date
+                tvHistoryStatus.text = history.status
+                tvHistoryFrom.text = history.from
+                tvHistoryDestination.text = history.destination
+                ivVehicle.setImageResource(history.vehicle)
+
+                ivDelete.setOnClickListener {
+                    onDeleteClick(history)
+                }
+            }
+        }
+    }
 }

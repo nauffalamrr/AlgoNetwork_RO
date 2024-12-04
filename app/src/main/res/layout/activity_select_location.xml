@@ -28,6 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:backgroundTint="@color/green"
+        android:textColor="@color/white"
         android:text="@string/select_location"
         app:layout_constraintBottom_toBottomOf="parent" />
 
