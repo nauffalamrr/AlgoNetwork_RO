@@ -20,7 +20,7 @@ class ResultAdapter(
 
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
         val result = results[position]
-        holder.binding.tvDestinationNumber.text = "Rute ${result.number}"
+        holder.binding.tvDestinationNumber.text = "Route ${result.number}"
         holder.binding.tvDestination.text = result.destination
     }
 

@@ -34,7 +34,7 @@
     <string name="begin_trip">Finish</string>
     <string name="error_loading_route">Failed to load route: %1$s</string>
     <string name="route_number">Route %1$d</string>
-    <string name="show_pop_up">Show Pop Up</string>
+    <string name="show_pop_up">Show Routes</string>
     <string name="error">Error</string>
 
     //Content Description

@@ -26,14 +26,24 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.Road
 import java.util.Locale
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import android.location.Location
 
 class ResultActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityResultBinding
     private lateinit var mapView: MapView
     private lateinit var adapter: ResultAdapter
+    private lateinit var userMarker: Marker
     private lateinit var database: TripHistoryRoomDatabase
     private val locations = mutableListOf<Result>()
+    private val LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION
+    private val LOCATION_PERMISSION_REQUEST_CODE = 123
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +59,12 @@ class ResultActivity : AppCompatActivity() {
 
         mapView = binding.mapView
         mapView.setMultiTouchControls(true)
+
+        if (checkLocationPermission()) {
+            setupUserLocation()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(LOCATION_PERMISSION), LOCATION_PERMISSION_REQUEST_CODE)
+        }
 
         // Get data from DestinationActivity
         val firstLocation = intent.getStringExtra("firstLocation")
@@ -79,6 +95,10 @@ class ResultActivity : AppCompatActivity() {
             binding.popupCard.visibility = View.VISIBLE
             binding.btnShowPopup.visibility = View.GONE
         }
+    }
+
+    private fun checkLocationPermission(): Boolean {
+        return ActivityCompat.checkSelfPermission(this, LOCATION_PERMISSION) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun navigateToHistoryFragment() {
@@ -219,12 +239,65 @@ class ResultActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    // Optionally, show an error message to the user
                     binding.errorMessage.text = getString(R.string.error_loading_route, e.localizedMessage)
                     binding.errorMessage.visibility = View.VISIBLE
                 }
             }
         }
+    }
+
+    private fun setupUserLocation() {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        try {
+            // Initial user location
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val userGeoPoint = GeoPoint(location.latitude, location.longitude)
+                    addUserMarker(userGeoPoint)
+                    mapView.controller.setZoom(15.0)
+                    mapView.controller.animateTo(userGeoPoint)
+                }
+            }
+
+            // Continuous location updates
+            val locationRequest = com.google.android.gms.location.LocationRequest.create().apply {
+                interval = 5000 // Update every 5 seconds
+                fastestInterval = 2000
+                priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+
+            val locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    val location = locationResult.lastLocation
+                    if (location != null) {
+                        val userGeoPoint = GeoPoint(location.latitude, location.longitude)
+                        updateUserMarker(userGeoPoint)
+                        mapView.controller.animateTo(userGeoPoint)
+                    }
+                }
+            }
+
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, mainLooper)
+
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "Error accessing location: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun addUserMarker(geoPoint: GeoPoint) {
+        userMarker = Marker(mapView).apply {
+            position = geoPoint
+            icon = resources.getDrawable(R.drawable.ic_user_location)
+            title = "Your Location"
+        }
+        mapView.overlays.add(userMarker)
+        mapView.invalidate()
+    }
+
+    private fun updateUserMarker(geoPoint: GeoPoint) {
+        userMarker.position = geoPoint
+        mapView.invalidate()
     }
 
     override fun onResume() {

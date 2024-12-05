@@ -67,6 +67,7 @@ dependencies {
     //OSM
     implementation (libs.osmdroid.android)
     implementation (libs.osmbonuspack)
+    implementation (libs.play.services.location)
 
     //Room
     implementation(libs.androidx.room.runtime)
