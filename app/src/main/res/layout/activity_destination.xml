@@ -13,7 +13,7 @@
         android:src="@drawable/ic_arrow_back_24"
         android:layout_margin="20dp"
         android:contentDescription="@string/back"
-        android:background="@color/material_on_primary_disabled"
+        android:background="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,7 +22,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        app:cardCornerRadius="15dp"
         app:layout_constraintBottom_toBottomOf="@+id/back_button"
         app:layout_constraintStart_toEndOf="@+id/back_button"
         app:layout_constraintTop_toTopOf="@+id/back_button">
@@ -83,7 +82,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"
-                app:cardCornerRadius="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -283,32 +281,12 @@
         android:id="@+id/button_optimize"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/optimize"
         android:layout_margin="20dp"
         android:backgroundTint="@color/green"
+        android:text="@string/optimize"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/card_map"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/card_map"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        app:cardCornerRadius="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageButton
-            android:id="@+id/button_map"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@color/material_on_primary_disabled"
-            android:src="@drawable/ic_location_pin_24"
-            android:contentDescription="@string/map_location"/>
-
-    </androidx.cardview.widget.CardView>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
