@@ -22,8 +22,14 @@ data class TripHistory (
     @ColumnInfo(name = "from")
     var from: String? = null,
 
-    @ColumnInfo(name = "destination")
-    var destination: String? = null,
+    @ColumnInfo(name = "destination1")
+    var destination1: String? = null,
+
+    @ColumnInfo(name = "destination2")
+    var destination2: String? = null,
+
+    @ColumnInfo(name = "destination3")
+    var destination3: String? = null,
 
     @ColumnInfo(name = "vehicle")
     var vehicle: Int

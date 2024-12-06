@@ -1,6 +1,7 @@
 package com.algonetwork.routeoptimization.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.algonetwork.routeoptimization.database.TripHistory
@@ -35,9 +36,18 @@ class TripHistoryAdapter(
                 tvHistoryDate.text = history.date
                 tvHistoryStatus.text = history.status
                 tvHistoryFrom.text = history.from
-                tvHistoryDestination.text = history.destination
+                tvHistoryDestination1.text = history.destination1
+                if (history.destination2.isNullOrEmpty()) {
+                    layoutDestination2.visibility = View.GONE
+                } else {
+                    tvHistoryDestination2.text = history.destination2
+                }
+                if (history.destination3.isNullOrEmpty()) {
+                    layoutDestination3.visibility = View.GONE
+                } else {
+                    tvHistoryDestination3.text = history.destination3
+                }
                 ivVehicle.setImageResource(history.vehicle)
-
                 ivDelete.setOnClickListener {
                     onDeleteClick(history)
                 }

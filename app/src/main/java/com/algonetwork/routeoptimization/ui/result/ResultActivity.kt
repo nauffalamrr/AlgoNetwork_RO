@@ -82,7 +82,7 @@ class ResultActivity : AppCompatActivity() {
         displayMarkersAndRoute()
 
         binding.btnGo.setOnClickListener {
-            saveTripToDatabase(firstLocation, firstDestination, vehicleType)
+            saveTripToDatabase(firstLocation, firstDestination, otherDestinations, vehicleType)
             navigateToHistoryFragment()
         }
 
@@ -108,19 +108,20 @@ class ResultActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun saveTripToDatabase(from: String?, destination: String?, vehicleType: String) {
+    private fun saveTripToDatabase(from: String?, destination: String?, otherDestinations: ArrayList<String>?, vehicleType: String) {
         val date = DateHelper.getCurrentDate()
 
-        val lastDestination = if (locations.isNotEmpty()) {
-            locations.last().destination
-        } else {
-            "Unknown"
-        }
+        val destination1 = destination
+        val destination2 = otherDestinations?.getOrNull(0) ?: "" // Use empty string if null
+        val destination3 = otherDestinations?.getOrNull(1) ?: "" // Use empty string if null
+
         val tripHistory = TripHistory(
             date = date,
             status = "Completed",
             from = from ?: "Unknown",
-            destination = lastDestination,
+            destination1 = destination1,
+            destination2 = destination2,
+            destination3 = destination3,
             vehicle = getVehicleIcon(vehicleType)
         )
 
