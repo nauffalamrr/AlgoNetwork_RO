@@ -32,8 +32,10 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import android.location.Location
-import com.algonetwork.routeoptimization.data.LocationData
-import com.algonetwork.routeoptimization.data.RouteData
+import com.algonetwork.routeoptimization.data.RoutePoint
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 import org.osmdroid.util.BoundingBox
 
 class ResultActivity : AppCompatActivity() {
@@ -48,7 +50,7 @@ class ResultActivity : AppCompatActivity() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 123
     private val markers = mutableListOf<Marker>()
     private val geoPoints = mutableListOf<GeoPoint>()
-    private var routeDataList: List<LocationData> = emptyList()
+    private var routeDataList: List<RoutePoint> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,9 +76,13 @@ class ResultActivity : AppCompatActivity() {
         val firstDestination = intent.getStringExtra("firstDestination")
         val otherDestinations = intent.getStringArrayListExtra("otherDestinations")
         val vehicleType = intent.getStringExtra("vehicleType") ?: "Car"
-        routeDataList = intent.getParcelableArrayListExtra<RouteData>("routeDataList")?.flatMap { it.locations } ?: emptyList()
+        routeDataList = intent.getParcelableArrayListExtra<RoutePoint>("routeDataList") ?: emptyList()
+        val inputLocations = intent.getStringArrayListExtra("inputLocations") ?: arrayListOf()
 
-        addLocationData(firstDestination, otherDestinations)
+        CoroutineScope(Dispatchers.Main).launch {
+            addLocationData(routeDataList, inputLocations)
+            setupRecyclerView()
+        }
 
         setupRecyclerView()
 
@@ -141,32 +147,28 @@ class ResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun addLocationData(firstDestination: String?, otherDestinations: ArrayList<String>?) {
-        if (!firstDestination.isNullOrEmpty()) {
-            locations.add(Result(1, firstDestination))
-        }
-
-        otherDestinations?.take(2)?.forEachIndexed { index, destination ->
-            locations.add(Result(index + 2, destination))
-        }
-
-        otherDestinations?.drop(2)?.forEachIndexed { index, destination ->
-            locations.add(Result(index + 4, destination))
+    private suspend fun addLocationData(routeDataList: List<RoutePoint>, inputLocations: List<String>) {
+        locations.clear()
+        val filteredRouteDataList = routeDataList.drop(1)
+        filteredRouteDataList.forEachIndexed { index, routePoint ->
+            val locationName = getLocationNameUsingNominatim(routePoint.latitude, routePoint.longitude)
+            val location = inputLocations.getOrNull(index) ?: "Unknown Location"
+            locations.add(Result(index + 1, locationName ?: location))
         }
     }
 
     private fun setupRecyclerView() {
-        adapter = ResultAdapter(locations)
+        adapter = ResultAdapter(locations.filter { it.destination.isNotBlank() })
         binding.rvResult.layoutManager = LinearLayoutManager(this)
         binding.rvResult.adapter = adapter
     }
 
-    private fun displayMarkersAndRoute(locationDataList: List<LocationData>) {
-        locationDataList.forEachIndexed { index, locationData ->
-            val geoPoint = GeoPoint(locationData.latitude, locationData.longitude)
+    private fun displayMarkersAndRoute(locationDataList: List<RoutePoint>) {
+        locationDataList.forEachIndexed { index, routeData ->
+            val geoPoint = GeoPoint(routeData.latitude, routeData.longitude)
             geoPoints.add(geoPoint)
             if (index > 0) {
-                val title = "Waypoint $index"
+                val title = "Route $index"
                 addMarker(geoPoint, title)
             }
         }
@@ -186,7 +188,7 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun drawRoute(geoPoints: List<GeoPoint>) {
-        val roadManager = OSRMRoadManager(this, "YOUR_USER_AGENT")
+        val roadManager = OSRMRoadManager(this, "RouteOptimizationUserAgent")
         roadManager.setMean(OSRMRoadManager.MEAN_BY_CAR)
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -202,7 +204,7 @@ class ResultActivity : AppCompatActivity() {
                     val segmentColor = when (i) {
                         0 -> resources.getColor(android.R.color.holo_blue_bright)
                         1 -> resources.getColor(android.R.color.holo_blue_dark)
-                        else -> resources.getColor(android.R.color.darker_gray)
+                        else -> resources.getColor(android.R.color.holo_purple)
                     }
 
                     val segmentOverlay = Polyline().apply {
@@ -292,5 +294,24 @@ class ResultActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         mapView.onPause()
+    }
+
+    private suspend fun getLocationNameUsingNominatim(latitude: Double, longitude: Double): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude"
+                val client = OkHttpClient()
+                val request = Request.Builder().url(url).build()
+                val response = client.newCall(request).execute()
+
+                if (response.isSuccessful) {
+                    val jsonResponse = JSONObject(response.body?.string())
+                    return@withContext jsonResponse.optString("display_name", "Unknown Location")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return@withContext null
+        }
     }
 }

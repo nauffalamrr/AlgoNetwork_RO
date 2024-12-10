@@ -16,6 +16,7 @@ import com.algonetwork.routeoptimization.data.GetLocationsResponse
 import com.algonetwork.routeoptimization.data.Location
 import com.algonetwork.routeoptimization.data.LocationCoordinates
 import com.algonetwork.routeoptimization.data.LocationsRequest
+import com.algonetwork.routeoptimization.data.RoutePoint
 import com.algonetwork.routeoptimization.data.retrofit.ApiConfig
 import com.algonetwork.routeoptimization.ui.result.ResultActivity
 import com.algonetwork.routeoptimization.ui.selectlocation.SelectLocationActivity
@@ -174,7 +175,7 @@ class DestinationActivity : AppCompatActivity() {
         val otherDestinationsObj = destinationList.mapNotNull { it.detail }
 
         val otherDestinationsCoordinates = otherDestinationsObj.map {
-            LocationCoordinates(it.latitude, it.longitude)
+            RoutePoint(it.latitude, it.longitude)
         }
 
         if (firstLocationObj != null && firstDestinationObj != null) {
@@ -182,7 +183,9 @@ class DestinationActivity : AppCompatActivity() {
                 LocationCoordinates(firstLocationObj.latitude, firstLocationObj.longitude),
                 LocationCoordinates(firstDestinationObj.latitude, firstDestinationObj.longitude)
             )
-            locations.addAll(otherDestinationsCoordinates)
+            locations.addAll(otherDestinationsCoordinates.map {
+                LocationCoordinates(it.latitude, it.longitude)
+            })
 
             val apiService = ApiConfig.getApiService()
             val locationsRequest = LocationsRequest(locations)
@@ -205,20 +208,20 @@ class DestinationActivity : AppCompatActivity() {
                                 response: Response<GetLocationsResponse>
                             ) {
                                 if (response.isSuccessful && response.body()?.status == "success") {
-                                    val routeDataList = response.body()?.data ?: emptyList()
+                                    val routeDataList = response.body()?.routes ?: emptyList()
 
                                     val moveIntent = Intent(this@DestinationActivity, ResultActivity::class.java)
                                     moveIntent.putExtra("firstLocation", firstLocation)
                                     moveIntent.putExtra("firstDestination", firstDestination)
                                     moveIntent.putStringArrayListExtra("otherDestinations", ArrayList(otherDestinations))
-                                    moveIntent.putParcelableArrayListExtra("routeDataList", ArrayList(routeDataList))
+                                    moveIntent.putParcelableArrayListExtra("routeDataList", ArrayList(routeDataList.flatten()))
                                     moveIntent.putExtra("vehicleType", vehicleType)
 
                                     startActivity(moveIntent)
                                 } else {
                                     Toast.makeText(
                                         this@DestinationActivity,
-                                        "Error fetching locations: ${response.message()}",
+                                        "Error fetch locations: ${response.message()}",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }

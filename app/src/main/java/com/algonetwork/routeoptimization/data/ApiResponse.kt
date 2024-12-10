@@ -11,19 +11,12 @@ data class AddLocationsResponse(
 
 @Parcelize
 data class GetLocationsResponse(
-    val data: List<RouteData>,
+    val routes: List<List<RoutePoint>>,
     val status: String
 ) : Parcelable
 
 @Parcelize
-data class RouteData(
-    val created_at: String,
-    val id: String,
-    val locations: List<LocationData>
-) : Parcelable
-
-@Parcelize
-data class LocationData(
+data class RoutePoint(
     val latitude: Double,
     val longitude: Double
 ) : Parcelable
