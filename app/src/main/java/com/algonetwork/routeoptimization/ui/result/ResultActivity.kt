@@ -25,7 +25,6 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.Road
-import java.util.Locale
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
@@ -33,6 +32,9 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import android.location.Location
+import com.algonetwork.routeoptimization.data.LocationData
+import com.algonetwork.routeoptimization.data.RouteData
+import org.osmdroid.util.BoundingBox
 
 class ResultActivity : AppCompatActivity() {
 
@@ -44,6 +46,9 @@ class ResultActivity : AppCompatActivity() {
     private val locations = mutableListOf<Result>()
     private val LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION
     private val LOCATION_PERMISSION_REQUEST_CODE = 123
+    private val markers = mutableListOf<Marker>()
+    private val geoPoints = mutableListOf<GeoPoint>()
+    private var routeDataList: List<LocationData> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +59,6 @@ class ResultActivity : AppCompatActivity() {
 
         database = TripHistoryRoomDatabase.getDatabase(this)
 
-        // Load map configuration
         Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", MODE_PRIVATE))
 
         mapView = binding.mapView
@@ -66,20 +70,17 @@ class ResultActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(LOCATION_PERMISSION), LOCATION_PERMISSION_REQUEST_CODE)
         }
 
-        // Get data from DestinationActivity
         val firstLocation = intent.getStringExtra("firstLocation")
         val firstDestination = intent.getStringExtra("firstDestination")
         val otherDestinations = intent.getStringArrayListExtra("otherDestinations")
         val vehicleType = intent.getStringExtra("vehicleType") ?: "Car"
+        routeDataList = intent.getParcelableArrayListExtra<RouteData>("routeDataList")?.flatMap { it.locations } ?: emptyList()
 
-        // Populate RecyclerView data
-        addLocationData(firstLocation, firstDestination, otherDestinations)
+        addLocationData(firstDestination, otherDestinations)
 
-        // Initialize RecyclerView
         setupRecyclerView()
 
-        // Display markers and route
-        displayMarkersAndRoute()
+        displayMarkersAndRoute(routeDataList)
 
         binding.btnGo.setOnClickListener {
             saveTripToDatabase(firstLocation, firstDestination, otherDestinations, vehicleType)
@@ -112,8 +113,8 @@ class ResultActivity : AppCompatActivity() {
         val date = DateHelper.getCurrentDate()
 
         val destination1 = destination
-        val destination2 = otherDestinations?.getOrNull(0) ?: "" // Use empty string if null
-        val destination3 = otherDestinations?.getOrNull(1) ?: "" // Use empty string if null
+        val destination2 = otherDestinations?.getOrNull(0) ?: ""
+        val destination3 = otherDestinations?.getOrNull(1) ?: ""
 
         val tripHistory = TripHistory(
             date = date,
@@ -134,20 +135,13 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun getVehicleIcon(vehicleType: String): Int {
-        return when (vehicleType.lowercase(Locale.getDefault())) {
+        return when (vehicleType.lowercase()) {
             "motorcycle" -> R.drawable.ic_motorcycle
             else -> R.drawable.ic_car
         }
     }
 
-    private fun addLocationData(firstLocation: String?, firstDestination: String?, otherDestinations: ArrayList<String>?) {
-        if (!firstLocation.isNullOrEmpty()) {
-            val geoPoint = getGeoPointFromAddress(firstLocation)
-            if (geoPoint != null) {
-                addMarker(geoPoint, firstLocation)
-            }
-        }
-
+    private fun addLocationData(firstDestination: String?, otherDestinations: ArrayList<String>?) {
         if (!firstDestination.isNullOrEmpty()) {
             locations.add(Result(1, firstDestination))
         }
@@ -167,45 +161,18 @@ class ResultActivity : AppCompatActivity() {
         binding.rvResult.adapter = adapter
     }
 
-    private fun getGeoPointFromAddress(address: String?): GeoPoint? {
-        val geocoder = android.location.Geocoder(this, Locale.getDefault())
-        return try {
-            val addressList = geocoder.getFromLocationName(address ?: "", 1)
-            if (!addressList.isNullOrEmpty()) {
-                val latLng = addressList[0]
-                GeoPoint(latLng.latitude, latLng.longitude)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    private fun displayMarkersAndRoute() {
-        val geoPoints = mutableListOf<GeoPoint>()
-
-        val firstLocation = intent.getStringExtra("firstLocation")
-        val geoPoint = getGeoPointFromAddress(firstLocation)
-        if (geoPoint != null) {
+    private fun displayMarkersAndRoute(locationDataList: List<LocationData>) {
+        locationDataList.forEachIndexed { index, locationData ->
+            val geoPoint = GeoPoint(locationData.latitude, locationData.longitude)
             geoPoints.add(geoPoint)
-        }
-
-        locations.forEach { result ->
-            try {
-                val address = getGeoPointFromAddress(result.destination)
-                if (address != null) {
-                    geoPoints.add(address)
-                    addMarker(address, result.destination)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            if (index > 0) {
+                val title = "Waypoint $index"
+                addMarker(geoPoint, title)
             }
         }
 
-        if (geoPoints.size > 1) {
-            drawRoute(ArrayList(geoPoints))
+        if (geoPoints.isNotEmpty()) {
+            drawRoute(geoPoints)
         }
     }
 
@@ -213,30 +180,49 @@ class ResultActivity : AppCompatActivity() {
         val marker = Marker(mapView)
         marker.position = geoPoint
         marker.title = title
+        markers.add(marker)
         mapView.overlays.add(marker)
-        mapView.controller.animateTo(geoPoint) // Center the map on the marker
+        mapView.invalidate()
     }
 
-    private fun drawRoute(geoPoints: ArrayList<GeoPoint>) {
+    private fun drawRoute(geoPoints: List<GeoPoint>) {
         val roadManager = OSRMRoadManager(this, "YOUR_USER_AGENT")
         roadManager.setMean(OSRMRoadManager.MEAN_BY_CAR)
 
-        // Launch a coroutine for network operation
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Perform the network request
-                val road: Road = roadManager.getRoad(geoPoints)
+                val allRouteOverlays = mutableListOf<Polyline>()
+                val routeGeoPoints = mutableListOf<GeoPoint>()
 
-                // Update UI on the main thread
-                withContext(Dispatchers.Main) {
-                    val roadOverlay = Polyline()
-                    roadOverlay.setPoints(road.mRouteHigh)
-                    roadOverlay.color = resources.getColor(android.R.color.holo_blue_dark)
-                    mapView.overlays.add(roadOverlay)
+                for (i in 0 until geoPoints.size - 1) {
+                    val segmentPoints = listOf(geoPoints[i], geoPoints[i + 1])
 
-                    // Zoom to fit the entire route
-                    mapView.zoomToBoundingBox(roadOverlay.bounds, true)
+                    val road: Road = roadManager.getRoad(ArrayList(segmentPoints))
+
+                    val segmentColor = when (i) {
+                        0 -> resources.getColor(android.R.color.holo_blue_bright)
+                        1 -> resources.getColor(android.R.color.holo_blue_dark)
+                        else -> resources.getColor(android.R.color.darker_gray)
+                    }
+
+                    val segmentOverlay = Polyline().apply {
+                        setPoints(road.mRouteHigh)
+                        color = segmentColor
+                    }
+
+                    allRouteOverlays.add(segmentOverlay)
+                    routeGeoPoints.addAll(segmentPoints)
                 }
+
+                withContext(Dispatchers.Main) {
+                    allRouteOverlays.forEach {
+                        mapView.overlays.add(it)
+                    }
+
+                    val bounds = BoundingBox.fromGeoPoints(routeGeoPoints)
+                    mapView.zoomToBoundingBox(bounds, true)
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
@@ -251,7 +237,6 @@ class ResultActivity : AppCompatActivity() {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         try {
-            // Initial user location
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
                     val userGeoPoint = GeoPoint(location.latitude, location.longitude)
@@ -261,10 +246,8 @@ class ResultActivity : AppCompatActivity() {
                 }
             }
 
-            // Continuous location updates
             val locationRequest = com.google.android.gms.location.LocationRequest.create().apply {
-                interval = 5000 // Update every 5 seconds
-                fastestInterval = 2000
+                interval = 10000
                 priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
             }
 

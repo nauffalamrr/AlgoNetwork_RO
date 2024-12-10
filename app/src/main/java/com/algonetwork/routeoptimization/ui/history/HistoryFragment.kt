@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.adapter.TripHistoryAdapter
 import com.algonetwork.routeoptimization.database.TripHistory
 import com.algonetwork.routeoptimization.database.TripHistoryRoomDatabase

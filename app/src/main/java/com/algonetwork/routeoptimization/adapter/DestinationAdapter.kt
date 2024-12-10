@@ -5,9 +5,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.algonetwork.routeoptimization.R
+import com.algonetwork.routeoptimization.data.Location
 import com.algonetwork.routeoptimization.databinding.ItemAddDestinationBinding
 
-data class Destination(val title: String, var detail: String)
+data class Destination(val title: String, var detail: Location)
 
 class DestinationAdapter(
     private val destinations: MutableList<Destination>,
@@ -19,7 +20,7 @@ class DestinationAdapter(
 
         fun bind(destination: Destination) {
             binding.tvDestination.text = destination.title
-            binding.tvDestinationDetail.text = destination.detail
+            binding.tvDestinationDetail.text = destination.detail.name
 
             itemView.setOnClickListener {
                 onItemClick(adapterPosition)
