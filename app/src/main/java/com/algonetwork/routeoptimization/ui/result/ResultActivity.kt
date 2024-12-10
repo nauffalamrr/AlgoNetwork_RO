@@ -31,7 +31,6 @@ import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import android.location.Location
 import com.algonetwork.routeoptimization.data.RoutePoint
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -51,6 +50,9 @@ class ResultActivity : AppCompatActivity() {
     private val markers = mutableListOf<Marker>()
     private val geoPoints = mutableListOf<GeoPoint>()
     private var routeDataList: List<RoutePoint> = emptyList()
+    private var isFollowingUser = false
+    private var lastUserGeoPoint: GeoPoint? = null
+    private lateinit var locationCallback: LocationCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +67,19 @@ class ResultActivity : AppCompatActivity() {
 
         mapView = binding.mapView
         mapView.setMultiTouchControls(true)
+
+        mapView.setMapListener(object : org.osmdroid.events.MapListener {
+            override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean {
+                if (isFollowingUser) {
+                    isFollowingUser = false
+                }
+                return true
+            }
+
+            override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean {
+                return true
+            }
+        })
 
         if (checkLocationPermission()) {
             setupUserLocation()
@@ -101,6 +116,15 @@ class ResultActivity : AppCompatActivity() {
         binding.btnShowPopup.setOnClickListener {
             binding.popupCard.visibility = View.VISIBLE
             binding.btnShowPopup.visibility = View.GONE
+        }
+
+        binding.btnCenterOnUser.setOnClickListener {
+            if (::userMarker.isInitialized && lastUserGeoPoint != null) {
+                isFollowingUser = true
+                mapView.controller.animateTo(lastUserGeoPoint)
+            } else {
+                Toast.makeText(this, "User location not available", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -239,27 +263,22 @@ class ResultActivity : AppCompatActivity() {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    val userGeoPoint = GeoPoint(location.latitude, location.longitude)
-                    addUserMarker(userGeoPoint)
-                    mapView.controller.setZoom(15.0)
-                    mapView.controller.animateTo(userGeoPoint)
-                }
-            }
-
             val locationRequest = com.google.android.gms.location.LocationRequest.create().apply {
                 interval = 10000
                 priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
             }
 
-            val locationCallback = object : LocationCallback() {
+            locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     val location = locationResult.lastLocation
                     if (location != null) {
                         val userGeoPoint = GeoPoint(location.latitude, location.longitude)
+                        lastUserGeoPoint = userGeoPoint
                         updateUserMarker(userGeoPoint)
-                        mapView.controller.animateTo(userGeoPoint)
+
+                        if (isFollowingUser) {
+                            mapView.controller.animateTo(userGeoPoint)
+                        }
                     }
                 }
             }
@@ -282,8 +301,12 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun updateUserMarker(geoPoint: GeoPoint) {
-        userMarker.position = geoPoint
-        mapView.invalidate()
+        if (::userMarker.isInitialized) {
+            userMarker.position = geoPoint
+            mapView.invalidate()
+        } else {
+            addUserMarker(geoPoint)
+        }
     }
 
     override fun onResume() {
@@ -294,6 +317,8 @@ class ResultActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         mapView.onPause()
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
     private suspend fun getLocationNameUsingNominatim(latitude: Double, longitude: Double): String? {

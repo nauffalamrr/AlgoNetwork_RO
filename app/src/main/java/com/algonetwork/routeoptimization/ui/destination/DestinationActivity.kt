@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.databinding.ActivityDestinationBinding
@@ -29,6 +31,8 @@ class DestinationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDestinationBinding
     private lateinit var adapter: DestinationAdapter
     private val destinationList = mutableListOf<Destination>()
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +78,10 @@ class DestinationActivity : AppCompatActivity() {
 
         binding.buttonOptimize.setOnClickListener {
             navigateToResultActivity()
+        }
+
+        isLoading.observe(this) { loading ->
+            showLoading(loading)
         }
     }
 
@@ -190,23 +198,27 @@ class DestinationActivity : AppCompatActivity() {
             val apiService = ApiConfig.getApiService()
             val locationsRequest = LocationsRequest(locations)
 
+            _isLoading.value = true
             apiService.addLocations(locationsRequest).enqueue(object : Callback<AddLocationsResponse> {
                 override fun onResponse(
                     call: Call<AddLocationsResponse>,
                     response: Response<AddLocationsResponse>
                 ) {
+                    _isLoading.value = false
                     if (response.isSuccessful && response.body()?.status == "success") {
                         Toast.makeText(
                             this@DestinationActivity,
-                            "Locations uploaded successfully.",
+                            "Optimizing Route",
                             Toast.LENGTH_SHORT
                         ).show()
 
+                        _isLoading.value = true
                         apiService.getLocations().enqueue(object : Callback<GetLocationsResponse> {
                             override fun onResponse(
                                 call: Call<GetLocationsResponse>,
                                 response: Response<GetLocationsResponse>
                             ) {
+                                _isLoading.value = false
                                 if (response.isSuccessful && response.body()?.status == "success") {
                                     val routeDataList = response.body()?.routes ?: emptyList()
 
@@ -228,6 +240,7 @@ class DestinationActivity : AppCompatActivity() {
                             }
 
                             override fun onFailure(call: Call<GetLocationsResponse>, t: Throwable) {
+                                _isLoading.value = false
                                 Toast.makeText(
                                     this@DestinationActivity,
                                     "Error fetching locations: ${t.localizedMessage}",
@@ -245,6 +258,7 @@ class DestinationActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<AddLocationsResponse>, t: Throwable) {
+                    _isLoading.value = false
                     Toast.makeText(
                         this@DestinationActivity,
                         "Error uploading locations: ${t.localizedMessage}",
@@ -258,6 +272,14 @@ class DestinationActivity : AppCompatActivity() {
                 "Please select both first location and destination.",
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            binding.progressBar.visibility = View.VISIBLE
+        } else {
+            binding.progressBar.visibility = View.GONE
         }
     }
 

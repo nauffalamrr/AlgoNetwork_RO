@@ -36,6 +36,7 @@
     <string name="route_number">Route %1$d</string>
     <string name="show_pop_up">Show Routes</string>
     <string name="error">Error</string>
+    <string name="center_on_user">My Location</string>
 
     //Content Description
     <string name="delete">Delete</string>
