@@ -98,7 +98,7 @@ class ResultActivity : AppCompatActivity() {
 
         setupRecyclerView()
 
-        displayMarkersAndRoute(routeDataList)
+        displayMarkersAndRoute(routeDataList, vehicleType)
 
         binding.btnGo.setOnClickListener {
             saveTripToDatabase(firstLocation, firstDestination, otherDestinations, vehicleType)
@@ -184,7 +184,7 @@ class ResultActivity : AppCompatActivity() {
         binding.rvResult.adapter = adapter
     }
 
-    private fun displayMarkersAndRoute(locationDataList: List<RoutePoint>) {
+    private fun displayMarkersAndRoute(locationDataList: List<RoutePoint>, vehicleType: String) {
         locationDataList.forEachIndexed { index, routeData ->
             val geoPoint = GeoPoint(routeData.latitude, routeData.longitude)
             geoPoints.add(geoPoint)
@@ -195,7 +195,7 @@ class ResultActivity : AppCompatActivity() {
         }
 
         if (geoPoints.isNotEmpty()) {
-            drawRoute(geoPoints)
+            drawRoute(geoPoints, vehicleType)
         }
     }
 
@@ -208,13 +208,18 @@ class ResultActivity : AppCompatActivity() {
         mapView.invalidate()
     }
 
-    private fun drawRoute(geoPoints: List<GeoPoint>) {
+    private fun drawRoute(geoPoints: List<GeoPoint>, vehicleType: String) {
         val roadManager = OSRMRoadManager(this, "RouteOptimizationUserAgent")
-        roadManager.setMean(OSRMRoadManager.MEAN_BY_CAR)
+
+        roadManager.setMean(
+            when (vehicleType.lowercase()) {
+                "motorcycle" -> OSRMRoadManager.MEAN_BY_BIKE
+                else -> OSRMRoadManager.MEAN_BY_CAR
+            }
+        )
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val allRouteOverlays = mutableListOf<Polyline>()
                 val routeGeoPoints = mutableListOf<GeoPoint>()
                 val overlayByPriority = mutableListOf<Polyline?>()
 
