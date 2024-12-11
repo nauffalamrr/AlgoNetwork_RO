@@ -219,6 +219,7 @@ class ResultActivity : AppCompatActivity() {
             try {
                 val allRouteOverlays = mutableListOf<Polyline>()
                 val routeGeoPoints = mutableListOf<GeoPoint>()
+                val overlayByPriority = mutableListOf<Polyline?>()
 
                 for (i in 0 until geoPoints.size - 1) {
                     val segmentPoints = listOf(geoPoints[i], geoPoints[i + 1])
@@ -235,14 +236,15 @@ class ResultActivity : AppCompatActivity() {
                         setPoints(road.mRouteHigh)
                         color = segmentColor
                     }
-
-                    allRouteOverlays.add(segmentOverlay)
+                    overlayByPriority.add(segmentOverlay)
                     routeGeoPoints.addAll(segmentPoints)
                 }
 
                 withContext(Dispatchers.Main) {
-                    allRouteOverlays.forEach {
-                        mapView.overlays.add(it)
+                    overlayByPriority.reversed().forEach { overlay ->
+                        if (overlay != null) {
+                            mapView.overlays.add(overlay)
+                        }
                     }
 
                     val bounds = BoundingBox.fromGeoPoints(routeGeoPoints)
