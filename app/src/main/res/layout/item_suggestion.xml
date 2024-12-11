@@ -1,0 +1,20 @@
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="32dp"
+    android:layout_marginEnd="32dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:elevation="2dp"
+    app:cardCornerRadius="0dp">
+
+    <TextView
+        android:id="@+id/text_view_location_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_location"
+        android:padding="10dp"
+        android:textSize="16sp" />
+
+</androidx.cardview.widget.CardView>
