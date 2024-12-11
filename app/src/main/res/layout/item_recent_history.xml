@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
+    android:layout_marginStart="30dp"
     android:layout_marginTop="12dp"
-    android:layout_marginEnd="12dp"
+    android:layout_marginEnd="30dp"
     android:layout_marginBottom="12dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,15 +29,13 @@
             android:id="@+id/tv_history_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="250dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="24dp"
             android:textSize="14sp"
             android:textStyle="bold"
+            card_view:layout_constraintEnd_toEndOf="parent"
             card_view:layout_constraintTop_toTopOf="parent"
-            card_view:layout_constraintStart_toEndOf="@id/tv_history_date"
-            card_view:layout_constraintStart_toStartOf="parent"
-            tools:text="@tools:sample/lorem"/>
+            tools:text="@tools:sample/lorem" />
 
         <ImageView
             android:id="@+id/iv_vehicle"

@@ -7,7 +7,7 @@ import android.location.Geocoder
 import android.location.LocationManager
 import android.os.Bundle
 import android.widget.Button
-import android.widget.SearchView
+import androidx.appcompat.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.algonetwork.routeoptimization.R
@@ -44,6 +44,8 @@ class SelectLocationActivity : AppCompatActivity() {
         geocoder = Geocoder(this, Locale.getDefault())
 
         mapView.setMultiTouchControls(true)
+
+        mapView.zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 

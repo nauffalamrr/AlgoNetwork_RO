@@ -54,6 +54,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation (libs.kotlinx.coroutines.android)
+    implementation("com.google.code.gson:gson:2.10.1")
 
     //Live Data
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

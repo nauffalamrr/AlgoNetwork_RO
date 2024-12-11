@@ -1,7 +1,9 @@
 package com.algonetwork.routeoptimization.ui.home
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +14,7 @@ import com.algonetwork.routeoptimization.adapter.RecentHistoryAdapter
 import com.algonetwork.routeoptimization.database.TripHistoryRoomDatabase
 import com.algonetwork.routeoptimization.databinding.FragmentHomeBinding
 import com.algonetwork.routeoptimization.ui.destination.DestinationActivity
+import com.algonetwork.routeoptimization.ui.result.ResultActivity
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -52,7 +55,7 @@ class HomeFragment : Fragment() {
     private fun loadHistory() {
         lifecycleScope.launch {
             database.tripHistoryDao().getAll().collect { tripHistories ->
-                val limitedTripHistories = tripHistories.take(2)
+                val limitedTripHistories = tripHistories.take(1)
                 recentHistoryAdapter.updateData(ArrayList(limitedTripHistories))
             }
         }

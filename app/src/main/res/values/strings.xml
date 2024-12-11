@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">Route Optimization</string>
+    <string name="app_name">Logiro</string>
 
     //Home Page
     <string name="title_home">Home</string>
     <string name="welcome">Welcome to</string>
-    <string name="route_app">Route Optimization App</string>
+    <string name="route_app">Logiro App</string>
     <string name="top_app">#1 Route Optimization App</string>
     <string name="select_vehicle">Select Vehicle</string>
     <string name="vehicle_motorcycle">Motorcycle</string>
@@ -43,5 +43,8 @@
     <string name="vehicle">Vehicle</string>
     <string name="from">from</string>
     <string name="to">to</string>
+
+    //Splash Screen
+    <string name="team_name">by RO02</string>
 
 </resources>
