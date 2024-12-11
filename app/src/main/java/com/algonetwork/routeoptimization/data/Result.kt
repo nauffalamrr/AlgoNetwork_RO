@@ -6,6 +6,5 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Result(
     val number: Int,
-    val destination: String,
-    val color: Int
+    val destination: String
 ) : Parcelable

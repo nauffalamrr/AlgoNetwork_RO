@@ -2,7 +2,6 @@ package com.algonetwork.routeoptimization.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.algonetwork.routeoptimization.data.Result
 import com.algonetwork.routeoptimization.databinding.ItemResultBinding
@@ -23,9 +22,6 @@ class ResultAdapter(
         val result = results[position]
         holder.binding.tvDestinationNumber.text = "Route ${position + 1}"
         holder.binding.tvDestination.text = result.destination
-        holder.binding.viewRouteColor.setBackgroundColor(
-            ContextCompat.getColor(holder.itemView.context, result.color)
-        )
     }
 
     override fun getItemCount() = results.size

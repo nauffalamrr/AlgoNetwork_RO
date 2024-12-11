@@ -175,12 +175,7 @@ class ResultActivity : AppCompatActivity() {
         filteredRouteDataList.forEachIndexed { index, routePoint ->
             val locationName = getLocationNameUsingNominatim(routePoint.latitude, routePoint.longitude)
             val location = inputLocations.getOrNull(index) ?: "Unknown Location"
-            val color = when (index) {
-                0 -> android.R.color.holo_blue_bright
-                1 -> android.R.color.holo_blue_dark
-                else -> android.R.color.holo_purple
-            }
-            locations.add(Result(index + 1, locationName ?: location, color))
+            locations.add(Result(index + 1, locationName ?: location))
         }
     }
 
@@ -194,32 +189,26 @@ class ResultActivity : AppCompatActivity() {
         locationDataList.forEachIndexed { index, routeData ->
             val geoPoint = GeoPoint(routeData.latitude, routeData.longitude)
             geoPoints.add(geoPoint)
-            if (index == 0) {
-                val marker = Marker(mapView).apply {
-                    position = geoPoint
-                    icon = resources.getDrawable(R.drawable.ic_from)
-                    title = "Start Position"
+            val marker = Marker(mapView).apply {
+                position = geoPoint
+                title = if (index == 0) "Start Position" else "Route $index"
+                icon = when (index) {
+                    0 -> resources.getDrawable(R.drawable.ic_from)
+                    1 -> resources.getDrawable(R.drawable.ic_des1)
+                    2 -> resources.getDrawable(R.drawable.ic_des2)
+                    else -> resources.getDrawable(R.drawable.ic_des3)
                 }
-                markers.add(marker)
-                mapView.overlays.add(marker)
-            } else {
-                val title = "Route $index"
-                addMarker(geoPoint, title)
             }
+
+            markers.add(marker)
+            mapView.overlays.add(marker)
         }
+
+        mapView.invalidate()
 
         if (geoPoints.isNotEmpty()) {
             drawRoute(geoPoints, vehicleType)
         }
-    }
-
-    private fun addMarker(geoPoint: GeoPoint, title: String) {
-        val marker = Marker(mapView)
-        marker.position = geoPoint
-        marker.title = title
-        markers.add(marker)
-        mapView.overlays.add(marker)
-        mapView.invalidate()
     }
 
     private fun drawRoute(geoPoints: List<GeoPoint>, vehicleType: String) {
