@@ -1,7 +1,10 @@
 package com.algonetwork.routeoptimization.ui.destination
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
+import androidx.appcompat.app.AlertDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -77,7 +80,11 @@ class DestinationActivity : AppCompatActivity() {
         }
 
         binding.buttonOptimize.setOnClickListener {
-            navigateToResultActivity()
+            if (!isGpsEnabled()) {
+                promptEnableGps()
+            } else {
+                navigateToResultActivity()
+            }
         }
 
         isLoading.observe(this) { loading ->
@@ -170,6 +177,23 @@ class DestinationActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun isGpsEnabled(): Boolean {
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    private fun promptEnableGps() {
+        AlertDialog.Builder(this)
+            .setTitle("Enable GPS")
+            .setMessage("GPS is required to optimize the route. Please enable GPS and try again.")
+            .setPositiveButton("OK") { _, _ ->
+                val intent = Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun navigateToResultActivity() {
