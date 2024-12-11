@@ -36,7 +36,7 @@ class HistoryFragment : Fragment() {
         database = TripHistoryRoomDatabase.getDatabase(requireContext())
 
         tripHistoryAdapter = TripHistoryAdapter(arrayListOf()) { tripHistory ->
-            deleteHistory(tripHistory)
+            showDeleteConfirmationDialog(tripHistory)
         }
 
         binding.rvTripHistory.layoutManager = LinearLayoutManager(context)
@@ -51,6 +51,21 @@ class HistoryFragment : Fragment() {
                 tripHistoryAdapter.updateData(ArrayList(tripHistories))
             }
         }
+    }
+
+    private fun showDeleteConfirmationDialog(tripHistory: TripHistory) {
+        val alertDialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Delete Confirmation")
+            .setMessage("Are you sure you want to delete this trip history?")
+            .setPositiveButton("Yes") { _, _ ->
+                deleteHistory(tripHistory)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        alertDialog.show()
     }
 
     private fun deleteHistory(tripHistory: TripHistory) {

@@ -9,7 +9,7 @@ import com.algonetwork.routeoptimization.databinding.ItemHistoryTripBinding
 
 class TripHistoryAdapter(
     private var tripHistory: MutableList<TripHistory>,
-    private val onDeleteClick: (TripHistory) -> Unit) :
+    private val onDeleteConfirm: (TripHistory) -> Unit) :
     RecyclerView.Adapter<TripHistoryAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -49,7 +49,7 @@ class TripHistoryAdapter(
                 }
                 ivVehicle.setImageResource(history.vehicle)
                 ivDelete.setOnClickListener {
-                    onDeleteClick(history)
+                    onDeleteConfirm(history)
                 }
             }
         }

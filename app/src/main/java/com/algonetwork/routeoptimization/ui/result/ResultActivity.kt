@@ -132,6 +132,7 @@ class ResultActivity : AppCompatActivity() {
     private fun navigateToHistoryFragment() {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("openFragment", "HistoryFragment")
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }
@@ -174,7 +175,12 @@ class ResultActivity : AppCompatActivity() {
         filteredRouteDataList.forEachIndexed { index, routePoint ->
             val locationName = getLocationNameUsingNominatim(routePoint.latitude, routePoint.longitude)
             val location = inputLocations.getOrNull(index) ?: "Unknown Location"
-            locations.add(Result(index + 1, locationName ?: location))
+            val color = when (index) {
+                0 -> android.R.color.holo_blue_bright
+                1 -> android.R.color.holo_blue_dark
+                else -> android.R.color.holo_purple
+            }
+            locations.add(Result(index + 1, locationName ?: location, color))
         }
     }
 
@@ -188,7 +194,15 @@ class ResultActivity : AppCompatActivity() {
         locationDataList.forEachIndexed { index, routeData ->
             val geoPoint = GeoPoint(routeData.latitude, routeData.longitude)
             geoPoints.add(geoPoint)
-            if (index > 0) {
+            if (index == 0) {
+                val marker = Marker(mapView).apply {
+                    position = geoPoint
+                    icon = resources.getDrawable(R.drawable.ic_from)
+                    title = "Start Position"
+                }
+                markers.add(marker)
+                mapView.overlays.add(marker)
+            } else {
                 val title = "Route $index"
                 addMarker(geoPoint, title)
             }
