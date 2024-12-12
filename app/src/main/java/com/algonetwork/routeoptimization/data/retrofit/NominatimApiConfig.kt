@@ -16,7 +16,7 @@ class NominatimApiConfig {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .build()
             val retrofit = Retrofit.Builder()
-                .baseUrl("https://nominatim.openstreetmap.org/") // Base URL here
+                .baseUrl("https://nominatim.openstreetmap.org/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build()
