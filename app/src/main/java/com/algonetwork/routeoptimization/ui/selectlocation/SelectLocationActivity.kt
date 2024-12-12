@@ -2,6 +2,7 @@ package com.algonetwork.routeoptimization.ui.selectlocation
 
 import android.Manifest
 import android.app.Activity
+import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,6 +13,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
@@ -217,9 +219,33 @@ class SelectLocationActivity : AppCompatActivity() {
     }
 
     private fun getCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            AlertDialog.Builder(this).apply {
+                setTitle("Enable GPS")
+                setMessage("GPS is required for this feature. Please enable it in the settings.")
+                setPositiveButton("Enable") { _, _ ->
+                    val intent = Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    startActivity(intent)
+                }
+                setNegativeButton("Cancel", null)
+                create()
+                show()
+            }
             return
         }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location ->
                 if (location != null) {
@@ -235,5 +261,6 @@ class SelectLocationActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error getting current location: ${exception.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
 }
 
