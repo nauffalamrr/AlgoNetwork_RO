@@ -64,6 +64,7 @@ class ResultActivity : AppCompatActivity() {
 
         mapView = binding.mapView
         mapView.setMultiTouchControls(true)
+        mapView.zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
 
         mapView.setMapListener(object : org.osmdroid.events.MapListener {
             override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean {

@@ -101,16 +101,11 @@ class DestinationActivity : AppCompatActivity() {
     }
 
     private fun addNewDestination() {
-        val newLocation = Location(
-            name = "Your Destination",
-            latitude = 40.785091,
-            longitude = -73.968285
-        )
         val maxDestinations = 2
         if (destinationList.size < maxDestinations) {
             val newDestination = Destination(
                 title = "Your Destination",
-                detail = newLocation
+                detail = null
             )
             destinationList.size + 1
             adapter.addDestination(newDestination)
@@ -199,7 +194,7 @@ class DestinationActivity : AppCompatActivity() {
     private fun navigateToResultActivity() {
         val firstLocation = binding.tvLocationDetail.text.toString()
         val firstDestination = binding.tvDestinationDetail.text.toString()
-        val otherDestinations = destinationList.map { it.detail.name }
+        val otherDestinations = destinationList.map { it.detail?.name }
         val vehicleType = intent.getStringExtra("vehicleType") ?: "car"
 
         val firstLocationObj = binding.tvLocationDetail.tag as? Location
@@ -210,93 +205,104 @@ class DestinationActivity : AppCompatActivity() {
             RoutePoint(it.latitude, it.longitude)
         }
 
-        if (firstLocationObj != null && firstDestinationObj != null) {
-            val locations = mutableListOf(
-                LocationCoordinates(firstLocationObj.latitude, firstLocationObj.longitude),
-                LocationCoordinates(firstDestinationObj.latitude, firstDestinationObj.longitude)
-            )
-            locations.addAll(otherDestinationsCoordinates.map {
-                LocationCoordinates(it.latitude, it.longitude)
-            })
-
-            val apiService = ApiConfig.getApiService()
-            val locationsRequest = LocationsRequest(locations)
-
-            _isLoading.value = true
-            apiService.addLocations(locationsRequest).enqueue(object : Callback<AddLocationsResponse> {
-                override fun onResponse(
-                    call: Call<AddLocationsResponse>,
-                    response: Response<AddLocationsResponse>
-                ) {
-                    _isLoading.value = false
-                    if (response.isSuccessful && response.body()?.status == "success") {
-                        Toast.makeText(
-                            this@DestinationActivity,
-                            "Optimizing Route",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        _isLoading.value = true
-                        apiService.getLocations().enqueue(object : Callback<GetLocationsResponse> {
-                            override fun onResponse(
-                                call: Call<GetLocationsResponse>,
-                                response: Response<GetLocationsResponse>
-                            ) {
-                                _isLoading.value = false
-                                if (response.isSuccessful && response.body()?.status == "success") {
-                                    val routeDataList = response.body()?.routes ?: emptyList()
-
-                                    val moveIntent = Intent(this@DestinationActivity, ResultActivity::class.java)
-                                    moveIntent.putExtra("firstLocation", firstLocation)
-                                    moveIntent.putExtra("firstDestination", firstDestination)
-                                    moveIntent.putStringArrayListExtra("otherDestinations", ArrayList(otherDestinations))
-                                    moveIntent.putParcelableArrayListExtra("routeDataList", ArrayList(routeDataList.flatten()))
-                                    moveIntent.putExtra("vehicleType", vehicleType)
-
-                                    startActivity(moveIntent)
-                                } else {
-                                    Toast.makeText(
-                                        this@DestinationActivity,
-                                        "Error fetch locations: ${response.message()}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-
-                            override fun onFailure(call: Call<GetLocationsResponse>, t: Throwable) {
-                                _isLoading.value = false
-                                Toast.makeText(
-                                    this@DestinationActivity,
-                                    "Error fetching locations: ${t.localizedMessage}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        })
-                    } else {
-                        Toast.makeText(
-                            this@DestinationActivity,
-                            "Error uploading locations: ${response.message()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<AddLocationsResponse>, t: Throwable) {
-                    _isLoading.value = false
-                    Toast.makeText(
-                        this@DestinationActivity,
-                        "Error uploading locations: ${t.localizedMessage}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            })
-        } else {
+        if (firstLocationObj == null || firstDestinationObj == null) {
             Toast.makeText(
-                this@DestinationActivity,
+                this,
                 "Please select both first location and destination.",
                 Toast.LENGTH_SHORT
             ).show()
+            return
         }
+
+        val incompleteDestination = destinationList.find { it.detail == null }
+        if (incompleteDestination != null) {
+            Toast.makeText(
+                this,
+                "Please complete all destination details.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val locations = mutableListOf(
+            LocationCoordinates(firstLocationObj.latitude, firstLocationObj.longitude),
+            LocationCoordinates(firstDestinationObj.latitude, firstDestinationObj.longitude)
+        )
+        locations.addAll(otherDestinationsCoordinates.map {
+            LocationCoordinates(it.latitude, it.longitude)
+        })
+
+        val apiService = ApiConfig.getApiService()
+        val locationsRequest = LocationsRequest(locations)
+
+        _isLoading.value = true
+        apiService.addLocations(locationsRequest).enqueue(object : Callback<AddLocationsResponse> {
+            override fun onResponse(
+                call: Call<AddLocationsResponse>,
+                response: Response<AddLocationsResponse>
+            ) {
+                _isLoading.value = false
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    Toast.makeText(
+                        this@DestinationActivity,
+                        "Optimizing Route",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    _isLoading.value = true
+                    apiService.getLocations().enqueue(object : Callback<GetLocationsResponse> {
+                        override fun onResponse(
+                            call: Call<GetLocationsResponse>,
+                            response: Response<GetLocationsResponse>
+                        ) {
+                            _isLoading.value = false
+                            if (response.isSuccessful && response.body()?.status == "success") {
+                                val routeDataList = response.body()?.routes ?: emptyList()
+
+                                val moveIntent = Intent(this@DestinationActivity, ResultActivity::class.java)
+                                moveIntent.putExtra("firstLocation", firstLocation)
+                                moveIntent.putExtra("firstDestination", firstDestination)
+                                moveIntent.putStringArrayListExtra("otherDestinations", ArrayList(otherDestinations))
+                                moveIntent.putParcelableArrayListExtra("routeDataList", ArrayList(routeDataList.flatten()))
+                                moveIntent.putExtra("vehicleType", vehicleType)
+
+                                startActivity(moveIntent)
+                            } else {
+                                Toast.makeText(
+                                    this@DestinationActivity,
+                                    "Error fetch locations: ${response.message()}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<GetLocationsResponse>, t: Throwable) {
+                            _isLoading.value = false
+                            Toast.makeText(
+                                this@DestinationActivity,
+                                "Error fetching locations: ${t.localizedMessage}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    })
+                } else {
+                    Toast.makeText(
+                        this@DestinationActivity,
+                        "Error uploading locations: ${response.message()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onFailure(call: Call<AddLocationsResponse>, t: Throwable) {
+                _isLoading.value = false
+                Toast.makeText(
+                    this@DestinationActivity,
+                    "Error uploading locations: ${t.localizedMessage}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        })
     }
 
     private fun showLoading(isLoading: Boolean) {

@@ -8,7 +8,7 @@ import com.algonetwork.routeoptimization.R
 import com.algonetwork.routeoptimization.data.Location
 import com.algonetwork.routeoptimization.databinding.ItemAddDestinationBinding
 
-data class Destination(val title: String, var detail: Location)
+data class Destination(val title: String, var detail: Location?)
 
 class DestinationAdapter(
     private val destinations: MutableList<Destination>,
@@ -20,7 +20,7 @@ class DestinationAdapter(
 
         fun bind(destination: Destination) {
             binding.tvDestination.text = destination.title
-            binding.tvDestinationDetail.text = destination.detail.name
+            binding.tvDestinationDetail.text = destination.detail?.name ?: "Your Destination"
 
             itemView.setOnClickListener {
                 onItemClick(adapterPosition)
